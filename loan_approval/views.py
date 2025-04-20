@@ -224,7 +224,7 @@ def home_loan(request):
 def home_form(request):
     return render(request,"loan_approval/home-loan-form.html")
 
-def persona_loan(request):
+def personal_loan(request):
     return render(request,"loan_approval/personal-loan.html")
 
 def personal_loan_form(request):
@@ -330,6 +330,7 @@ def home_result(request):
         print(loanAmount)
         print(income)
         print(property_Value)
+        print(CIBILScore)
        
         Dept_payment=home_loan + car_loan + personal_loan + credit_card
         down_Payment=property_Value-loanAmount
@@ -342,17 +343,19 @@ def home_result(request):
         LTV=(loanAmount/property_Value)*100
         print(DTI)
         print(LTV)
+        
         result=model.predict([[Age,WorkExperience,CIBILScore,down_Payment,Existing_Loan,property_Value,loanAmount,income,DTI,LTV]])
         input_features=np.array([[Age,WorkExperience,CIBILScore,down_Payment,Existing_Loan,property_Value,loanAmount,income,DTI,LTV]])
-        Approval_probability=model.predict_proba(input_features)[0][1] * 100 
-        Rejection_probability=100-Approval_probability
+        Rejection_probability=model.predict_proba(input_features)[0][1] * 100 
+        Approval_probability=100-Rejection_probability
         print(result)
+        print(CIBILScore)
         print('Approval_probability',Approval_probability)
 
         if result[0]==0:
-         result="Will Rejected"
-        else:
          result="Will Approved"
+        else:
+         result="Will Rejected"
         return render(request,'loan_approval/result.html',{'result':result,'CIBILScore':CIBILScore,'DTI':DTI,'LTV':LTV,'Approval_probability':Approval_probability,'Rejection_probability':Rejection_probability})
 
 
@@ -379,6 +382,7 @@ def personal_result(request):
         month_income=Income/12
         DTI=((Dept_payment/month_income)*100) if Dept_payment >0 else 0
         print(DTI)
+        print(CIBILScore)
         
         result=model.predict([[Age,WorkExperience,CIBILScore,LoanTenure,No_Dependencies,ExistingLoan,LoanAmount,Income,DTI,Self_Employeed]])
         input_features=np.array([[Age,WorkExperience,CIBILScore,LoanTenure,No_Dependencies,ExistingLoan,LoanAmount,Income,DTI,Self_Employeed]])
@@ -388,9 +392,9 @@ def personal_result(request):
         print('Approval_probability',Approval_probability)
 
         if result[0]==0:
-         result="Will Rejected"
-        else:
          result="Will Approved"
+        else:
+         result="Will Rejected"
         return render(request,'loan_approval/result.html',{'result':result,'Income':Income,'CIBILScore':CIBILScore,'DTI':DTI,'Self_Employeed':Self_Employeed,'Approval_probability':Approval_probability,'Rejection_probability':Rejection_probability})
 
 
